@@ -11,9 +11,9 @@
             <h3>节点信息</h3>
             <p><strong>ID:</strong> {{ selectedNode.id }}</p>
             <p><strong>名称:</strong> {{ selectedNode.name }}</p>
-            <div v-for="[key, val] in nodeEntries" :key="key">
+            <!-- <div v-for="[key, val] in nodeEntries" :key="key">
               <p><strong>{{ key }}:</strong> {{ val }}</p>
-            </div>
+            </div> -->
           </div>
           <div v-else>
             <p>点击左侧节点查看详细信息</p>
@@ -52,7 +52,6 @@ const selectedNode = ref<Node | null>(null);
 
 const nodeEntries = computed(() => {
   if (!selectedNode.value) return [];
-  // Exclude id and name if you don't want to repeat them
   return Object.entries(selectedNode.value).filter(([key]) => key !== 'id' && key !== 'name');
 });
 
@@ -67,6 +66,46 @@ const renderChart = () => {
       }
     });
   }
+
+  let nodes, links;
+  if (selectedNode.value) {
+    const selectedId = selectedNode.value.id;
+    const relatedNodeIds = new Set([selectedId]);
+    props.links.forEach(link => {
+      if (link.source === selectedId) relatedNodeIds.add(link.target);
+      if (link.target === selectedId) relatedNodeIds.add(link.source);
+    });
+    nodes = props.nodes.map(node => {
+      if (relatedNodeIds.has(node.id)) {
+        return { ...node, itemStyle: { opacity: 1 }, label: { show: true } };
+      } else {
+        return { ...node, itemStyle: { opacity: 0.1 }, label: { show: false } };
+      }
+    });
+    links = props.links.map(link => {
+      if (link.source === selectedId || link.target === selectedId) {
+        return { ...link, lineStyle: { opacity: 1 } };
+      } else {
+        return { ...link, lineStyle: { opacity: 0.1 } };
+      }
+    });
+  } else {
+    nodes = props.nodes.map(node => {
+      if (node.is_used) {
+        return { ...node, itemStyle: { opacity: 1 } };
+      } else {
+        return { ...node, itemStyle: { opacity: 0.1 }, label: { show: false } };
+      }
+    });
+    links = props.links.map(link => {
+      if (link.is_used) {
+        return { ...link, lineStyle: { opacity: 1 } };
+      } else {
+        return { ...link, lineStyle: { opacity: 0.1 } };
+      }
+    });
+  }
+
   const option = {
     tooltip: {},
     series: [
@@ -74,8 +113,8 @@ const renderChart = () => {
         type: 'graph',
         layout: 'force',
         roam: true,
-        data: props.nodes,
-        links: props.links,
+        data: nodes,
+        links: links,
         label: {
           show: true,
           position: 'right',
@@ -98,7 +137,12 @@ onMounted(() => {
   renderChart();
 });
 
-watch(() => [props.nodes, props.links], () => {
+// 监听数据和选中节点变化，动态渲染
+watch([
+  () => props.nodes,
+  () => props.links,
+  selectedNode
+], () => {
   renderChart();
 }, { deep: true });
 </script>
