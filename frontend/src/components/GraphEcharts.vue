@@ -6,12 +6,59 @@
     </div>
     <div class="graphrag-right">
       <div v-if="selectedNode">
-        <h3>节点信息</h3>
-        <p><strong>ID:</strong> {{ selectedNode.id }}</p>
-        <p><strong>名称:</strong> {{ selectedNode.name }}</p>
-        <!-- <div v-for="[key, val] in nodeEntries" :key="key">
-          <p><strong>{{ key }}:</strong> {{ val }}</p>
-        </div> -->
+        <template v-if="selectedNode.type === 'systems'">
+          <h3>系统信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+          <p v-if="selectedNode.url"><strong>系统地址:</strong> <a :href="selectedNode.url" target="_blank">{{ selectedNode.url }}</a></p>
+          <p v-if="selectedNode.description"><strong>描述:</strong> {{ selectedNode.description }}</p>
+          <p v-if="selectedNode.department_in_charge"><strong>负责部门:</strong> {{ selectedNode.department_in_charge }}</p>
+          <p v-if="selectedNode.person_in_charge"><strong>负责人:</strong> {{ selectedNode.person_in_charge }}</p>
+        </template>
+        <template v-else-if="selectedNode.type === 'instances'">
+          <h3>实例信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+          <p v-if="selectedNode.system_name"><strong>所属系统:</strong> {{ selectedNode.system_name }}</p>
+          <p v-if="selectedNode.url"><strong>连接地址:</strong> {{ selectedNode.url }}</p>
+          <p v-if="selectedNode.type"><strong>类型:</strong> {{ selectedNode.type }}</p>
+          <p v-if="selectedNode.version"><strong>版本:</strong> {{ selectedNode.version }}</p>
+          <p v-if="selectedNode.area"><strong>区域:</strong> {{ selectedNode.area }}</p>
+        </template>
+        <template v-else-if="selectedNode.type === 'databases'">
+          <h3>数据库信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+          <p v-if="selectedNode.instance_name"><strong>所属实例:</strong> {{ selectedNode.instance_name }}</p>
+          <p v-if="selectedNode.description"><strong>描述:</strong> {{ selectedNode.description }}</p>
+        </template>
+        <template v-else-if="selectedNode.type === 'tables'">
+          <h3>数据表信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+          <p v-if="selectedNode.database_name"><strong>所属数据库:</strong> {{ selectedNode.database_name }}</p>
+          <p v-if="selectedNode.summary"><strong>简介:</strong> {{ selectedNode.summary }}</p>
+          <p v-if="selectedNode.entity_type"><strong>实体类型:</strong> {{ selectedNode.entity_type }}</p>
+          <p v-if="selectedNode.classification"><strong>分类:</strong> {{ selectedNode.classification }}</p>
+          <p v-if="selectedNode.level"><strong>级别:</strong> {{ selectedNode.level }}</p>
+        </template>
+        <template v-else-if="selectedNode.type === 'fields'">
+          <h3>字段信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+          <p v-if="selectedNode.chinese_name"><strong>中文名:</strong> {{ selectedNode.chinese_name }}</p>
+          <p v-if="selectedNode.table_name"><strong>所属表:</strong> {{ selectedNode.table_name }}</p>
+          <p v-if="selectedNode.data_type"><strong>数据类型:</strong> {{ selectedNode.data_type }}</p>
+          <p v-if="selectedNode.is_primary_key"><strong>主键:</strong> {{ selectedNode.is_primary_key }}</p>
+          <p v-if="selectedNode.is_nullable"><strong>可为空:</strong> {{ selectedNode.is_nullable }}</p>
+          <p v-if="selectedNode.is_sensitive"><strong>敏感字段:</strong> {{ selectedNode.is_sensitive }}</p>
+          <p v-if="selectedNode.description"><strong>描述:</strong> {{ selectedNode.description }}</p>
+        </template>
+        <template v-else>
+          <h3>节点信息</h3>
+          <p><strong>ID:</strong> {{ selectedNode.id }}</p>
+          <p><strong>名称:</strong> {{ selectedNode.name }}</p>
+        </template>
       </div>
       <div v-else>
         <p>点击左侧节点查看详细信息</p>
@@ -175,6 +222,7 @@ const renderChart = () => {
     chartInstance.on('click', (params: any) => {
       if (params.dataType === 'node') {
         selectedNode.value = params.data;
+        console.log('Selected Node:', selectedNode.value);
       }
     });
   }
@@ -245,8 +293,8 @@ const renderChart = () => {
           formatter: '{b}'
         },
         force: {
-          repulsion: 180,
-          edgeLength: 110
+          repulsion: 350,
+          edgeLength: 180
         },
         lineStyle: {
           color: '#bbb',
