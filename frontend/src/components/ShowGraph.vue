@@ -17,7 +17,12 @@ const fields = ref([]);
 const links = ref([]);
 
 onMounted(() => {
-  console.log("Fetching graph data for ID:", id);
+  const favicon = (document.querySelector('link[rel="icon"]') as HTMLLinkElement) || document.createElement('link');
+  favicon.rel = 'icon';
+  favicon.type = 'image/svg';
+  favicon.href = '/public/数据可视化.svg';
+  document.head.appendChild(favicon);
+
   axios.get(`http://10.4.20.29:5000/get-graph`, {params: {conversation_id: id}})
     .then(response => {
       const data = response.data;
